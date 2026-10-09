@@ -1,0 +1,14 @@
+Priya Raman — Senior ML Engineer
+priya.raman@example.com · Bengaluru
+
+EXPERIENCE
+Lumen Health (2019–present) — Senior ML Engineer
+- Built and shipped a retrieval-augmented clinical notes assistant used by 400 doctors.
+- Owned the FastAPI services, the pgvector store and the evaluation harness.
+- Deployed on AWS with Docker and Terraform.
+
+Northwind Analytics (2015–2019) — Python Developer
+- Built Django data services processing 2M records a day.
+
+SKILLS
+Python, FastAPI, Django, RAG, embeddings, pgvector, AWS, Terraform, evals

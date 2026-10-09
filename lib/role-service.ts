@@ -2,6 +2,13 @@ import { randomUUID } from "node:crypto";
 import type { OpenAIGateway } from "./gateway";
 import { Role } from "./schemas/role";
 import { RubricBody, type Rubric } from "./schemas/rubric";
+import type { Run } from "./schemas/run";
+import { buildDecisionRequest } from "./decisions/build-questions";
+import { costUsd } from "./decisions/cost";
+import { runDecision, toScorecard, type Scorecard } from "./decisions/scorecard";
+import { ExtractionError, extractText, type UploadedFile } from "./extract";
+import { DEFAULT_DECISION_MODEL } from "./config";
+import type { Decision } from "./gateway";
 import type { Store } from "./store";
 
 /** One attempt plus one retry when the model's rubric fails full validation. */
@@ -17,14 +24,24 @@ export type RoleSummary = {
 
 export type JdInput = { kind: "paste"; text: string };
 
+/** A run with the rubric it was scored on (null if that file is gone) and its parsed scorecard. */
+export type RunView = { run: Run; rubric: Rubric | null; scorecard: Scorecard | null; resumeText: string | null };
+
 type RoleServiceDeps = {
   store: Store;
   gateway: OpenAIGateway;
+  decisionModel?: string;
   now?: () => Date;
   newId?: () => string;
 };
 
-export function createRoleService({ store, gateway, now = () => new Date(), newId = shortId }: RoleServiceDeps) {
+export function createRoleService({
+  store,
+  gateway,
+  decisionModel = DEFAULT_DECISION_MODEL,
+  now = () => new Date(),
+  newId = shortId,
+}: RoleServiceDeps) {
   async function requireRole(roleId: string): Promise<Role> {
     const role = await store.getRole(roleId);
     if (!role) throw new ServiceError("That role no longer exists.");
@@ -113,6 +130,65 @@ export function createRoleService({ store, gateway, now = () => new Date(), newI
       if (!jdText) throw new ServiceError("This role has no job description text.");
       const body = await draftValidRubric(jdText);
       return saveNextRubric(role, body, "generated");
+    },
+
+    async scoreResume(roleId: string, file: UploadedFile): Promise<Run> {
+      const role = await requireRole(roleId);
+      if (!role.currentRubricVersion) throw new ServiceError("Generate a rubric first.");
+      const rubric = await store.getRubric(roleId, role.currentRubricVersion);
+      if (!rubric) throw new ServiceError("This role's current rubric is missing on disk.");
+
+      let extracted;
+      try {
+        extracted = await extractText(file);
+      } catch (error) {
+        if (error instanceof ExtractionError) throw new ServiceError(error.message);
+        throw new ServiceError(`Couldn't read "${file.fileName}": ${errorMessage(error)}`);
+      }
+
+      const request = buildDecisionRequest(rubric, extracted.text, decisionModel);
+      const started = performance.now();
+      let response: Decision | null = null;
+      let error: string | null = null;
+      try {
+        response = await gateway.decide(request);
+      } catch (caught) {
+        error = errorMessage(caught);
+      }
+      const latencyMs = Math.round(performance.now() - started);
+
+      const run: Run = {
+        id: newId(),
+        roleId,
+        rubricVersion: rubric.version,
+        createdAt: now().toISOString(),
+        resume: { fileName: file.fileName, kind: extracted.kind, chars: extracted.text.length },
+        request,
+        response,
+        latencyMs,
+        costUsd: response ? costUsd(response.usage) : 0,
+        error,
+      };
+      await store.saveRun(run, extracted.text);
+      return run;
+    },
+
+    async listRuns(roleId: string): Promise<Run[]> {
+      return store.listRuns(roleId);
+    },
+
+    async getResumeText(roleId: string, runId: string): Promise<string | null> {
+      return store.getResumeText(roleId, runId);
+    },
+
+    async getRunView(roleId: string, runId: string, lowConfidenceThreshold: number): Promise<RunView | null> {
+      const run = await store.getRun(roleId, runId);
+      if (!run) return null;
+      const rubric = await store.getRubric(roleId, run.rubricVersion);
+      const resumeText = await store.getResumeText(roleId, runId);
+      const decision = runDecision(run);
+      const scorecard = rubric && decision ? toScorecard(rubric, decision, lowConfidenceThreshold) : null;
+      return { run, rubric, scorecard, resumeText };
     },
 
     async getCurrentRubric(roleId: string): Promise<Rubric | null> {

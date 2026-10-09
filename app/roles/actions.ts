@@ -34,3 +34,19 @@ export async function generateRubricAction(roleId: string, _prev: FormState): Pr
   refresh();
   return { error: null };
 }
+
+export async function scoreResumeAction(roleId: string, _prev: FormState, formData: FormData): Promise<FormState> {
+  const { service } = await requireApp();
+  const file = formData.get("resume");
+  if (!(file instanceof File) || file.size === 0) return { error: "Choose a PDF or DOCX resume first." };
+
+  let runId: string;
+  try {
+    const run = await service.scoreResume(roleId, { fileName: file.name, bytes: new Uint8Array(await file.arrayBuffer()) });
+    runId = run.id;
+  } catch (error) {
+    if (error instanceof ServiceError) return { error: error.message };
+    throw error;
+  }
+  redirect(`/roles/${roleId}/runs/${runId}`);
+}

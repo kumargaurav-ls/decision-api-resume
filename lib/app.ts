@@ -19,7 +19,7 @@ export const loadApp = cache(async (): Promise<{ app: App } | { problems: Config
   const gateway = config.mockMode
     ? createMockGateway()
     : createOpenAIGateway({ apiKey: config.openaiApiKey!, rubricModel: config.rubricModel });
-  const service = createRoleService({ store: createStore(config.dataDir), gateway });
+  const service = createRoleService({ store: createStore(config.dataDir), gateway, decisionModel: config.decisionModel });
   return { app: { config, service } };
 });
 

@@ -1,3 +1,6 @@
+export const DEFAULT_RUBRIC_MODEL = "gpt-6.1-sol";
+export const DEFAULT_DECISION_MODEL = "gpt-6-luna";
+
 export type Config = {
   openaiApiKey: string | null;
   /** Canned OpenAI responses; lets the app run without a key. */
@@ -37,8 +40,8 @@ export function loadConfig(env: Env = process.env): ConfigResult {
     config: {
       openaiApiKey,
       mockMode,
-      rubricModel: blankToNull(env.OPENAI_RUBRIC_MODEL) ?? "gpt-6.1-sol",
-      decisionModel: blankToNull(env.OPENAI_DECISION_MODEL) ?? "gpt-6-luna",
+      rubricModel: blankToNull(env.OPENAI_RUBRIC_MODEL) ?? DEFAULT_RUBRIC_MODEL,
+      decisionModel: blankToNull(env.OPENAI_DECISION_MODEL) ?? DEFAULT_DECISION_MODEL,
       lowConfidenceThreshold,
       dataDir: blankToNull(env.DATA_DIR) ?? "./data",
       privateEvalDir: blankToNull(env.PRIVATE_EVAL_DIR),

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { GenerateRubricButton } from "@/components/generate-rubric-button";
+import { ResumeUpload } from "@/components/resume-upload";
+import { RunHistory } from "@/components/run-history";
 import { RubricView } from "@/components/rubric-view";
 import { getApp } from "@/lib/app";
 
@@ -24,12 +26,27 @@ async function RoleDetail({ params }: { params: Promise<{ id: string }> }) {
   if (!app) return null;
   const role = await app.service.getRole(id);
   if (!role) notFound();
-  const [jdText, rubric] = await Promise.all([app.service.getJdText(id), app.service.getCurrentRubric(id)]);
+  const [jdText, rubric, runs] = await Promise.all([
+    app.service.getJdText(id),
+    app.service.getCurrentRubric(id),
+    app.service.listRuns(id),
+  ]);
 
   return (
     <>
       <h1 className="mt-4 text-2xl font-semibold tracking-tight">{role.title}</h1>
-      <section className="mt-8">
+      {rubric && (
+        <section className="mt-8 space-y-6">
+          <ResumeUpload roleId={role.id} model={app.config.decisionModel} />
+          <div>
+            <h2 className="text-sm font-semibold">History</h2>
+            <div className="mt-3">
+              <RunHistory roleId={role.id} runs={runs} />
+            </div>
+          </div>
+        </section>
+      )}
+      <section className="mt-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold tracking-tight">Rubric</h2>
           {rubric && <GenerateRubricButton roleId={role.id} model={app.config.rubricModel} regenerate />}
