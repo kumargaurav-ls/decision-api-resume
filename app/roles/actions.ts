@@ -1,5 +1,6 @@
 "use server";
 
+import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireApp } from "@/lib/app";
 import { ServiceError } from "@/lib/role-service";
@@ -20,4 +21,16 @@ export async function createRoleAction(_prev: FormState, formData: FormData): Pr
     throw error;
   }
   redirect(`/roles/${roleId}`);
+}
+
+export async function generateRubricAction(roleId: string, _prev: FormState): Promise<FormState> {
+  const { service } = await requireApp();
+  try {
+    await service.generateRubric(roleId);
+  } catch (error) {
+    if (error instanceof ServiceError) return { error: error.message };
+    throw error;
+  }
+  refresh();
+  return { error: null };
 }

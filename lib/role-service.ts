@@ -1,7 +1,11 @@
 import { randomUUID } from "node:crypto";
 import type { OpenAIGateway } from "./gateway";
 import { Role } from "./schemas/role";
+import { RubricBody, type Rubric } from "./schemas/rubric";
 import type { Store } from "./store";
+
+/** One attempt plus one retry when the model's rubric fails full validation. */
+const MAX_DRAFT_ATTEMPTS = 2;
 
 export type RoleSummary = {
   id: string;
@@ -20,7 +24,48 @@ type RoleServiceDeps = {
   newId?: () => string;
 };
 
-export function createRoleService({ store, now = () => new Date(), newId = shortId }: RoleServiceDeps) {
+export function createRoleService({ store, gateway, now = () => new Date(), newId = shortId }: RoleServiceDeps) {
+  async function requireRole(roleId: string): Promise<Role> {
+    const role = await store.getRole(roleId);
+    if (!role) throw new ServiceError("That role no longer exists.");
+    return role;
+  }
+
+  /** Writes the next rubric version and points the role at it. */
+  async function saveNextRubric(role: Role, body: RubricBody, source: Rubric["source"]): Promise<Rubric> {
+    const rubric: Rubric = {
+      ...body,
+      version: (role.currentRubricVersion ?? 0) + 1,
+      createdAt: now().toISOString(),
+      source,
+    };
+    await store.saveRubric(role.id, rubric);
+    await store.saveRole({ ...role, currentRubricVersion: rubric.version });
+    return rubric;
+  }
+
+  async function draftValidRubric(jdText: string): Promise<RubricBody> {
+    let lastIssue = "";
+    for (let attempt = 0; attempt < MAX_DRAFT_ATTEMPTS; attempt++) {
+      let raw: unknown;
+      try {
+        raw = await gateway.draftRubric(jdText);
+      } catch (error) {
+        throw new ServiceError(`Couldn't draft a rubric: ${errorMessage(error)}`);
+      }
+      if (raw === null || raw === undefined) {
+        lastIssue = "the model declined to answer";
+        continue;
+      }
+      const parsed = RubricBody.safeParse(raw);
+      if (parsed.success) return parsed.data;
+      lastIssue = parsed.error.issues[0]?.message ?? "schema mismatch";
+    }
+    throw new ServiceError(
+      `The model returned an invalid rubric ${MAX_DRAFT_ATTEMPTS} times (${lastIssue}). Try generating again.`,
+    );
+  }
+
   return {
     async createRole(input: { title: string; jd: JdInput }) {
       const title = input.title.trim();
@@ -61,6 +106,20 @@ export function createRoleService({ store, now = () => new Date(), newId = short
     async getJdText(roleId: string) {
       return store.getJdText(roleId);
     },
+
+    async generateRubric(roleId: string): Promise<Rubric> {
+      const role = await requireRole(roleId);
+      const jdText = await store.getJdText(roleId);
+      if (!jdText) throw new ServiceError("This role has no job description text.");
+      const body = await draftValidRubric(jdText);
+      return saveNextRubric(role, body, "generated");
+    },
+
+    async getCurrentRubric(roleId: string): Promise<Rubric | null> {
+      const role = await store.getRole(roleId);
+      if (!role?.currentRubricVersion) return null;
+      return store.getRubric(roleId, role.currentRubricVersion);
+    },
   };
 }
 
@@ -68,6 +127,10 @@ export type RoleService = ReturnType<typeof createRoleService>;
 
 /** An error whose message is safe to show to the user. */
 export class ServiceError extends Error {}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
 
 function shortId(): string {
   return randomUUID().replace(/-/g, "").slice(0, 12);

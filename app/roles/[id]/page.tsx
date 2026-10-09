@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { GenerateRubricButton } from "@/components/generate-rubric-button";
+import { RubricView } from "@/components/rubric-view";
 import { getApp } from "@/lib/app";
 
 export default function RolePage({ params }: PageProps<"/roles/[id]">) {
@@ -22,17 +24,35 @@ async function RoleDetail({ params }: { params: Promise<{ id: string }> }) {
   if (!app) return null;
   const role = await app.service.getRole(id);
   if (!role) notFound();
-  const jdText = await app.service.getJdText(id);
+  const [jdText, rubric] = await Promise.all([app.service.getJdText(id), app.service.getCurrentRubric(id)]);
 
   return (
     <>
       <h1 className="mt-4 text-2xl font-semibold tracking-tight">{role.title}</h1>
       <section className="mt-8">
-        <h2 className="text-sm font-medium text-muted-foreground">Job description</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold tracking-tight">Rubric</h2>
+          {rubric && <GenerateRubricButton roleId={role.id} model={app.config.rubricModel} regenerate />}
+        </div>
+        <div className="mt-4">
+          {rubric ? (
+            <RubricView rubric={rubric} />
+          ) : (
+            <div className="rounded-xl border border-dashed px-6 py-10">
+              <p className="mb-4 text-sm text-muted-foreground">
+                No rubric yet. Draft one from the job description — you can edit it afterwards.
+              </p>
+              <GenerateRubricButton roleId={role.id} model={app.config.rubricModel} />
+            </div>
+          )}
+        </div>
+      </section>
+      <details className="mt-10">
+        <summary className="cursor-pointer text-sm font-medium text-muted-foreground">Job description</summary>
         <pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap rounded-lg border bg-muted/30 p-4 font-sans text-sm">
           {jdText}
         </pre>
-      </section>
+      </details>
     </>
   );
 }
