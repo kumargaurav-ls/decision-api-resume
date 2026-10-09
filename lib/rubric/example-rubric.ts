@@ -1,0 +1,104 @@
+import type { RubricBody } from "../schemas/rubric";
+
+/**
+ * Worked example given to the rubric generator as a few-shot.
+ * Derived from the AI Engineer screening criteria in the plan's appendix.
+ */
+export const EXAMPLE_JD_SUMMARY =
+  "Senior Applied AI Engineer: 7+ years of Python, has shipped production LLM systems (RAG, agents, voice), deploys on AWS, and owns systems end to end.";
+
+export const EXAMPLE_RUBRIC: RubricBody = {
+  roleSummary:
+    "A senior engineer who builds and ships production LLM systems — retrieval, agents and evaluation — in Python on AWS, owning work from design through deployment.",
+  dimensions: [
+    {
+      key: "python_depth",
+      name: "Python depth",
+      instructions: "Judge professional Python depth: years using Python in paid roles and use of frameworks such as Django or FastAPI. General programming in other languages does not count.",
+      levels: [
+        { label: "None", description: "No professional Python mentioned." },
+        { label: "Basic", description: "Python only in scripts, coursework or under two years of professional use." },
+        { label: "Working", description: "Two to five years building Python services or tools in paid roles." },
+        { label: "Strong", description: "Five to seven years; built production services with Django, FastAPI or similar." },
+        { label: "Expert", description: "Seven or more years; designed and owned Python services or libraries used by others." },
+      ],
+    },
+    {
+      key: "production_llm",
+      name: "Production LLM systems",
+      instructions: "Judge shipped, user-facing LLM work — RAG, agents, voice or similar. Courses, tutorials and notebooks are not production.",
+      levels: [
+        { label: "None", description: "No LLM work mentioned." },
+        { label: "Basic", description: "Courses, tutorials, hackathons or notebooks only." },
+        { label: "Working", description: "Built an internal tool or prototype with an LLM API." },
+        { label: "Strong", description: "Shipped at least one production LLM system used by real users." },
+        { label: "Expert", description: "Shipped several production LLM systems and owned their evaluation and monitoring." },
+      ],
+    },
+    {
+      key: "rag_prompting",
+      name: "RAG and prompt engineering",
+      instructions: "Judge hands-on retrieval work: embeddings, vector databases, chunking, retrieval strategy and prompt design.",
+      levels: [
+        { label: "None", description: "No retrieval or prompt engineering mentioned." },
+        { label: "Basic", description: "Mentions RAG or prompts without describing what was built." },
+        { label: "Working", description: "Built a RAG pipeline with an off-the-shelf vector database." },
+        { label: "Strong", description: "Tuned chunking, retrieval and prompts against measured quality." },
+        { label: "Expert", description: "Designed retrieval architectures (hybrid search, reranking) and led prompt evaluation." },
+      ],
+    },
+    {
+      key: "ai_ecosystem",
+      name: "AI ecosystem awareness",
+      instructions: "Judge evidence of current practice: evals, agentic workflows, MCP, recent models and frameworks, used in real work.",
+      levels: [
+        { label: "None", description: "No current AI tooling mentioned." },
+        { label: "Basic", description: "Lists tools or buzzwords without describing their use." },
+        { label: "Working", description: "Used one current framework or eval approach in a project." },
+        { label: "Strong", description: "Regularly uses evals and agentic workflows in delivered work." },
+        { label: "Expert", description: "Builds or contributes to AI tooling, evals or frameworks used by others." },
+      ],
+    },
+    {
+      key: "cloud_infra",
+      name: "Cloud and infrastructure",
+      instructions: "Judge hands-on AWS and deployment work: services used, containers, Kubernetes, infrastructure as code.",
+      levels: [
+        { label: "None", description: "No cloud or deployment work mentioned." },
+        { label: "Basic", description: "Deployed to a managed platform without touching infrastructure." },
+        { label: "Working", description: "Deployed services on AWS using Docker." },
+        { label: "Strong", description: "Owned AWS infrastructure with Terraform or Kubernetes in production." },
+        { label: "Expert", description: "Designed cloud architecture and deployment pipelines for multiple teams." },
+      ],
+    },
+    {
+      key: "end_to_end",
+      name: "End-to-end delivery",
+      instructions: "Judge whether the candidate designs, builds and deploys whole systems rather than one layer.",
+      levels: [
+        { label: "None", description: "No evidence of delivering a system." },
+        { label: "Basic", description: "Contributed to one layer of a system built by others." },
+        { label: "Working", description: "Built features across backend and data layers." },
+        { label: "Strong", description: "Designed, built and deployed a complete system." },
+        { label: "Expert", description: "Led several end-to-end systems from design to production operation." },
+      ],
+    },
+  ],
+  mustHaves: [
+    { key: "python_7y", statement: "The candidate has 7 or more years of professional Python experience." },
+    { key: "shipped_llm", statement: "The candidate has shipped at least one LLM-based system to production users." },
+    { key: "aws_experience", statement: "The candidate has hands-on experience deploying services on AWS." },
+  ],
+  redFlags: [
+    { key: "keyword_stuffing", statement: "The resume lists AI keywords that no role description backs up with concrete work." },
+    { key: "stale_ai", statement: "All of the candidate's AI work is more than two years old." },
+  ],
+  fit: {
+    instructions: "Decide how well the candidate fits the role overall.",
+    options: [
+      { value: "strong_fit", description: "Meets every must-have and shows real, recent AI depth." },
+      { value: "possible_fit", description: "Misses one must-have, or AI depth is unclear from the resume." },
+      { value: "weak_fit", description: "Misses several must-haves, or AI work is superficial." },
+    ],
+  },
+};
