@@ -10,8 +10,8 @@ export async function ConfigStatus() {
   if ("problems" in loaded) return <SetupRequired {...loaded.problems} />;
   if (!loaded.app.config.mockMode) return null;
   return (
-    <div className="border-b bg-amber-50 px-4 py-2 text-center text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-100">
-      Mock mode — OpenAI responses are canned, not real.
+    <div className="border-b bg-caution-soft px-4 py-2 text-center text-sm text-caution">
+      Mock mode. OpenAI responses are canned, not real.
     </div>
   );
 }

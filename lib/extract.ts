@@ -23,7 +23,7 @@ export class ExtractionError extends Error {}
 export async function extractText(file: UploadedFile): Promise<ExtractedText> {
   const kind = documentKind(file.fileName);
   if (kind === "doc") {
-    throw new ExtractionError(`"${file.fileName}" is a legacy .doc file — save it as .docx or PDF and upload again.`);
+    throw new ExtractionError(`"${file.fileName}" is a legacy .doc file. Save it as .docx or PDF and upload again.`);
   }
   if (!kind) throw new ExtractionError(`"${file.fileName}" isn't a PDF or DOCX file.`);
   if (file.bytes.byteLength > MAX_UPLOAD_BYTES) {
@@ -37,7 +37,7 @@ export async function extractText(file: UploadedFile): Promise<ExtractedText> {
     const normalised = normaliseText(text);
     if (normalised.length < MIN_PDF_CHARS || normalised.length < MIN_PDF_CHARS_PER_PAGE * totalPages) {
       throw new ExtractionError(
-        `"${file.fileName}" has no extractable text — it looks scanned or image-only. Upload a text-based PDF or DOCX.`,
+        `"${file.fileName}" has no extractable text. It looks scanned or image-only, so upload a text-based PDF or DOCX.`,
       );
     }
     return { kind, text: normalised, pages: totalPages };
@@ -46,7 +46,7 @@ export async function extractText(file: UploadedFile): Promise<ExtractedText> {
   const { value } = await mammoth.extractRawText({ buffer: Buffer.from(file.bytes) });
   const text = normaliseText(value);
   if (text.length < MIN_DOCUMENT_CHARS) {
-    throw new ExtractionError(`"${file.fileName}" has no extractable text — it looks empty.`);
+    throw new ExtractionError(`"${file.fileName}" has no extractable text. It looks empty.`);
   }
   return { kind, text, pages: null };
 }

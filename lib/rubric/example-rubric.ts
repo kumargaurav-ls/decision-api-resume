@@ -9,7 +9,7 @@ export const EXAMPLE_JD_SUMMARY =
 
 export const EXAMPLE_RUBRIC: RubricBody = {
   roleSummary:
-    "A senior engineer who builds and ships production LLM systems — retrieval, agents and evaluation — in Python on AWS, owning work from design through deployment.",
+    "A senior engineer who builds and ships production LLM systems: retrieval, agents and evaluation: in Python on AWS, owning work from design through deployment.",
   dimensions: [
     {
       key: "python_depth",
@@ -26,7 +26,7 @@ export const EXAMPLE_RUBRIC: RubricBody = {
     {
       key: "production_llm",
       name: "Production LLM systems",
-      instructions: "Judge shipped, user-facing LLM work — RAG, agents, voice or similar. Courses, tutorials and notebooks are not production.",
+      instructions: "Judge shipped, user-facing LLM work: RAG, agents, voice or similar. Courses, tutorials and notebooks are not production.",
       levels: [
         { label: "None", description: "No LLM work mentioned." },
         { label: "Basic", description: "Courses, tutorials, hackathons or notebooks only." },

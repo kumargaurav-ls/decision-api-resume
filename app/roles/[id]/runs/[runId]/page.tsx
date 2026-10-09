@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { BasicScorecard } from "@/components/basic-scorecard";
+import { Scorecard } from "@/components/scorecard/scorecard";
 import { RescoreButton } from "@/components/rescore-button";
 import { StaleBadge } from "@/components/stale-badge";
 import { getApp } from "@/lib/app";
@@ -37,7 +37,7 @@ async function RunDetail({ params }: { params: Promise<{ id: string; runId: stri
         Rubric v{run.rubricVersion} · {run.latencyMs} ms · ${run.costUsd.toFixed(6)}
       </p>
       {stale && (
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300/60 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-caution-soft px-4 py-3 text-sm text-caution">
           <span className="flex items-center gap-2">
             <StaleBadge version={run.rubricVersion} />
             The role is now on v{role.currentRubricVersion}.
@@ -52,7 +52,7 @@ async function RunDetail({ params }: { params: Promise<{ id: string; runId: stri
         </div>
       ) : scorecard ? (
         <div className="mt-8">
-          <BasicScorecard scorecard={scorecard} />
+          <Scorecard scorecard={scorecard} threshold={app.config.lowConfidenceThreshold} />
         </div>
       ) : (
         <p className="mt-8 text-sm text-muted-foreground">

@@ -195,7 +195,7 @@ export function RubricEditor({ roleId, rubric: saved }: { roleId: string; rubric
                     key={level.label}
                     label={level.label}
                     inline
-                    accessibleLabel={`${label} — ${level.label}`}
+                    accessibleLabel={`${label}: ${level.label}`}
                     error={issue(`dimensions.${i}.levels.${j}.description`)}
                   >
                     {(props) => (

@@ -239,7 +239,7 @@ export function createRoleService({
         );
       }
       const parsed = RubricBody.safeParse(body);
-      if (!parsed.success) throw new ServiceError(`The rubric isn't valid — ${describeIssue(parsed.error)}`);
+      if (!parsed.success) throw new ServiceError(`The rubric isn't valid: ${describeIssue(parsed.error)}`);
       return saveNextRubric(role, parsed.data, "edited");
     },
 

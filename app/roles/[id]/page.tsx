@@ -66,7 +66,7 @@ async function RoleDetail({ params }: { params: Promise<{ id: string }> }) {
           ) : (
             <div className="rounded-xl border border-dashed px-6 py-10">
               <p className="mb-4 text-sm text-muted-foreground">
-                No rubric yet. Draft one from the job description — you can edit it afterwards.
+                No rubric yet. Draft one from the job description, then edit it as you like.
               </p>
               <GenerateRubricButton roleId={role.id} model={app.config.rubricModel} />
             </div>

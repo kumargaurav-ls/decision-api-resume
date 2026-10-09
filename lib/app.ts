@@ -34,5 +34,5 @@ export async function requireApp(): Promise<App> {
   const loaded = await loadApp();
   if ("app" in loaded) return loaded.app;
   const names = [...loaded.problems.missing, ...loaded.problems.invalid].join(", ");
-  throw new Error(`App is not configured — check ${names} in .env.local`);
+  throw new Error(`App is not configured: check ${names} in .env.local`);
 }

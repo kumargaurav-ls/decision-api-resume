@@ -5,9 +5,13 @@
 @custom-variant dark (@media (prefers-color-scheme: dark));
 
 @theme inline {
+  --color-signal: var(--signal);
+  --color-signal-soft: var(--signal-soft);
+  --color-caution: var(--caution);
+  --color-caution-soft: var(--caution-soft);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -49,18 +53,24 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
+  /* One accent: a calm system blue for selected options and probability fills. */
+  --signal: oklch(0.56 0.19 255);
+  --signal-soft: oklch(0.94 0.035 255);
+  /* Caution is semantic only: low confidence and stale runs. */
+  --caution: oklch(0.5 0.12 70);
+  --caution-soft: oklch(0.96 0.05 85);
+  --background: oklch(0.978 0.002 255);
   --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
+  --card: oklch(0.997 0.001 255);
   --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
+  --popover: oklch(0.997 0.001 255);
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  --muted-foreground: oklch(0.5 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
@@ -85,7 +95,11 @@
 
 @media (prefers-color-scheme: dark) {
 :root {
-  --background: oklch(0.145 0 0);
+  --signal: oklch(0.72 0.15 255);
+  --signal-soft: oklch(0.3 0.06 255);
+  --caution: oklch(0.82 0.12 80);
+  --caution-soft: oklch(0.3 0.05 75);
+  --background: oklch(0.16 0.004 255);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -128,5 +142,9 @@
   }
   html {
     @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1 {
+    letter-spacing: -0.02em;
   }
 }
