@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { scoreResumeAction, type ActionState } from "@/app/roles/actions";
+import { DOCUMENT_HINT, DocumentFileInput } from "@/components/document-file-input";
 import { Button } from "@/components/ui/button";
 
 const initialActionState: ActionState = { error: null };
@@ -13,16 +14,9 @@ export function ResumeUpload({ roleId, model }: { roleId: string; model: string 
       <label htmlFor="resume" className="text-sm font-medium">
         Score a resume
       </label>
-      <p className="mt-1 text-sm text-muted-foreground">Text-based PDF or DOCX, up to 5 MB. One Decisions API call.</p>
+      <p className="mt-1 text-sm text-muted-foreground">{DOCUMENT_HINT} One Decisions API call.</p>
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <input
-          id="resume"
-          name="resume"
-          type="file"
-          accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-          required
-          className="text-sm file:mr-3 file:rounded-md file:border file:bg-background file:px-3 file:py-1.5 file:text-sm file:font-medium"
-        />
+        <DocumentFileInput id="resume" name="resume" />
         <Button type="submit" disabled={pending}>
           {pending ? `Scoring with ${model}…` : "Score resume"}
         </Button>

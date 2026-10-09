@@ -7,6 +7,7 @@ import { ResumeUpload } from "@/components/resume-upload";
 import { RunHistory } from "@/components/run-history";
 import { RubricView } from "@/components/rubric-view";
 import { getApp } from "@/lib/app";
+import { jdSourceLabel } from "@/lib/schemas/role";
 
 export default function RolePage({ params }: PageProps<"/roles/[id]">) {
   return (
@@ -73,7 +74,9 @@ async function RoleDetail({ params }: { params: Promise<{ id: string }> }) {
         </div>
       </section>
       <details className="mt-10">
-        <summary className="cursor-pointer text-sm font-medium text-muted-foreground">Job description</summary>
+        <summary className="cursor-pointer text-sm font-medium text-muted-foreground">
+          Job description · {jdSourceLabel(role.jdSource)} · {(jdText ?? "").length.toLocaleString()} characters
+        </summary>
         <pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap rounded-lg border bg-muted/30 p-4 font-sans text-sm">
           {jdText}
         </pre>

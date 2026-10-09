@@ -1,12 +1,12 @@
 import { randomUUID } from "node:crypto";
 import type { OpenAIGateway } from "./gateway";
-import { Role } from "./schemas/role";
+import { Role, type JdSource } from "./schemas/role";
 import { RubricBody, type Rubric } from "./schemas/rubric";
 import type { Run } from "./schemas/run";
 import { buildDecisionRequest } from "./decisions/build-questions";
 import { costUsd } from "./decisions/cost";
 import { runDecision, toScorecard, type Scorecard } from "./decisions/scorecard";
-import { ExtractionError, extractText, type UploadedFile } from "./extract";
+import { ExtractionError, extractText, normaliseText, type DocumentKind, type UploadedFile } from "./extract";
 import { DEFAULT_DECISION_MODEL } from "./config";
 import type { Decision } from "./gateway";
 import type { Store } from "./store";
@@ -22,7 +22,10 @@ export type RoleSummary = {
   createdAt: string;
 };
 
-export type JdInput = { kind: "paste"; text: string };
+/** JD text plus where it came from (pasted, or extracted from an uploaded file). */
+export type JdInput = { kind: JdSource; text: string };
+
+export type DocumentPreview = { kind: DocumentKind; text: string; chars: number };
 
 /** A run with the rubric it was scored on (null if that file is gone) and its parsed scorecard. */
 export type RunView = { run: Run; rubric: Rubric | null; scorecard: Scorecard | null; resumeText: string | null };
@@ -86,9 +89,10 @@ export function createRoleService({
   return {
     async createRole(input: { title: string; jd: JdInput }) {
       const title = input.title.trim();
-      const text = input.jd.text.trim();
+      // Browsers submit form text with CRLF line endings; store it normalised like extracted text.
+      const text = normaliseText(input.jd.text);
       if (!title) throw new ServiceError("Give the role a title.");
-      if (!text) throw new ServiceError("Paste the job description text.");
+      if (!text) throw new ServiceError(input.jd.kind === "paste" ? "Paste the job description text." : "The job description has no text.");
 
       const role = Role.parse({
         id: newId(),
@@ -124,6 +128,12 @@ export function createRoleService({
       return store.getJdText(roleId);
     },
 
+    /** Extracts an uploaded document's text so the user can check it before using it. */
+    async previewDocument(file: UploadedFile): Promise<DocumentPreview> {
+      const extracted = await extractOrExplain(file);
+      return { kind: extracted.kind, text: extracted.text, chars: extracted.text.length };
+    },
+
     async generateRubric(roleId: string): Promise<Rubric> {
       const role = await requireRole(roleId);
       const jdText = await store.getJdText(roleId);
@@ -138,13 +148,7 @@ export function createRoleService({
       const rubric = await store.getRubric(roleId, role.currentRubricVersion);
       if (!rubric) throw new ServiceError("This role's current rubric is missing on disk.");
 
-      let extracted;
-      try {
-        extracted = await extractText(file);
-      } catch (error) {
-        if (error instanceof ExtractionError) throw new ServiceError(error.message);
-        throw new ServiceError(`Couldn't read "${file.fileName}": ${errorMessage(error)}`);
-      }
+      const extracted = await extractOrExplain(file);
 
       const request = buildDecisionRequest(rubric, extracted.text, decisionModel);
       const started = performance.now();
@@ -219,6 +223,16 @@ export type RoleService = ReturnType<typeof createRoleService>;
 
 /** An error whose message is safe to show to the user. */
 export class ServiceError extends Error {}
+
+/** Extracts text, turning any failure into a message safe to show the user. */
+async function extractOrExplain(file: UploadedFile) {
+  try {
+    return await extractText(file);
+  } catch (error) {
+    if (error instanceof ExtractionError) throw new ServiceError(error.message);
+    throw new ServiceError(`Couldn't read "${file.fileName}": ${errorMessage(error)}`);
+  }
+}
 
 /** First zod issue as "path: message" for user-facing errors. */
 function describeIssue(error: { issues: { path: PropertyKey[]; message: string }[] }): string {

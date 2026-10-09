@@ -3,7 +3,8 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireApp } from "@/lib/app";
-import { ServiceError } from "@/lib/role-service";
+import { ServiceError, type DocumentPreview } from "@/lib/role-service";
+import { JdSource } from "@/lib/schemas/role";
 
 export type ActionState = { error: string | null };
 
@@ -11,9 +12,13 @@ export async function createRoleAction(_prev: ActionState, formData: FormData): 
   const { service } = await requireApp();
   let roleId: string;
   try {
+    // For uploads, the text extracted by previewJdAction comes back via hidden inputs.
+    // Acceptable for a local single-user tool; the source label is not re-verified.
+    const source = JdSource.safeParse(formData.get("jdSource"));
+    if (!source.success) return { error: "Unknown job description source." };
     const role = await service.createRole({
       title: String(formData.get("title") ?? ""),
-      jd: { kind: "paste", text: String(formData.get("jdText") ?? "") },
+      jd: { kind: source.data, text: String(formData.get("jdText") ?? "") },
     });
     roleId = role.id;
   } catch (error) {
@@ -61,4 +66,20 @@ export async function saveRubricAction(roleId: string, rubric: unknown, baseVers
     throw error;
   }
   redirect(`/roles/${roleId}`);
+}
+
+export type PreviewState = { error: string | null; preview: (DocumentPreview & { fileName: string }) | null };
+
+/** Extracts an uploaded JD so the user can check the text before creating the role. */
+export async function previewJdAction(_prev: PreviewState, formData: FormData): Promise<PreviewState> {
+  const { service } = await requireApp();
+  const file = formData.get("jdFile");
+  if (!(file instanceof File) || file.size === 0) return { error: "Choose a PDF or DOCX job description.", preview: null };
+  try {
+    const preview = await service.previewDocument({ fileName: file.name, bytes: new Uint8Array(await file.arrayBuffer()) });
+    return { error: null, preview: { ...preview, fileName: file.name } };
+  } catch (error) {
+    if (error instanceof ServiceError) return { error: error.message, preview: null };
+    throw error;
+  }
 }

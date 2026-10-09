@@ -12,3 +12,7 @@ export const Role = z.object({
 
 export type Role = z.infer<typeof Role>;
 export type JdSource = z.infer<typeof JdSource>;
+
+export function jdSourceLabel(source: JdSource): string {
+  return source === "paste" ? "pasted" : source.toUpperCase();
+}
