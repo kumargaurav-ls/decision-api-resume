@@ -28,10 +28,10 @@ async function RoleDetail({ params }: { params: Promise<{ id: string }> }) {
   if (!app) return null;
   const role = await app.service.getRole(id);
   if (!role) notFound();
-  const [jdText, rubric, runs] = await Promise.all([
+  const [jdText, rubric, history] = await Promise.all([
     app.service.getJdText(id),
     app.service.getCurrentRubric(id),
-    app.service.listRuns(id),
+    app.service.listRunHistory(id),
   ]);
 
   return (
@@ -43,7 +43,7 @@ async function RoleDetail({ params }: { params: Promise<{ id: string }> }) {
           <div>
             <h2 className="text-sm font-semibold">History</h2>
             <div className="mt-3">
-              <RunHistory roleId={role.id} runs={runs} />
+              <RunHistory roleId={role.id} history={history} />
             </div>
           </div>
         </section>

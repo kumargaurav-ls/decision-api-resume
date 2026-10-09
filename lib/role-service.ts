@@ -28,7 +28,16 @@ export type JdInput = { kind: JdSource; text: string };
 export type DocumentPreview = { kind: DocumentKind; text: string; chars: number };
 
 /** A run with the rubric it was scored on (null if that file is gone) and its parsed scorecard. */
-export type RunView = { run: Run; rubric: Rubric | null; scorecard: Scorecard | null; resumeText: string | null };
+export type RunHistoryItem = { run: Run; stale: boolean };
+
+export type RunView = {
+  run: Run;
+  rubric: Rubric | null;
+  scorecard: Scorecard | null;
+  resumeText: string | null;
+  /** Scored on an older rubric version than the role's current one. */
+  stale: boolean;
+};
 
 type RoleServiceDeps = {
   store: Store;
@@ -49,6 +58,48 @@ export function createRoleService({
     const role = await store.getRole(roleId);
     if (!role) throw new ServiceError("That role no longer exists.");
     return role;
+  }
+
+  async function requireCurrentRubric(roleId: string): Promise<Rubric> {
+    const role = await requireRole(roleId);
+    if (!role.currentRubricVersion) throw new ServiceError("Generate a rubric first.");
+    const rubric = await store.getRubric(roleId, role.currentRubricVersion);
+    if (!rubric) throw new ServiceError("This role's current rubric is missing on disk.");
+    return rubric;
+  }
+
+  /** One Decisions call for one resume; the run is saved even when the call fails. */
+  async function decideAndSave(
+    roleId: string,
+    rubric: Rubric,
+    resume: Pick<Run["resume"], "fileName" | "kind">,
+    resumeText: string,
+  ): Promise<Run> {
+    const request = buildDecisionRequest(rubric, resumeText, decisionModel);
+    const started = performance.now();
+    let response: Decision | null = null;
+    let error: string | null = null;
+    try {
+      response = await gateway.decide(request);
+    } catch (caught) {
+      error = errorMessage(caught);
+    }
+    const latencyMs = Math.round(performance.now() - started);
+
+    const run: Run = {
+      id: newId(),
+      roleId,
+      rubricVersion: rubric.version,
+      createdAt: now().toISOString(),
+      resume: { ...resume, chars: resumeText.length },
+      request,
+      response,
+      latencyMs,
+      costUsd: response ? costUsd(response.usage) : 0,
+      error,
+    };
+    await store.saveRun(run, resumeText);
+    return run;
   }
 
   /** Writes the next rubric version and points the role at it. */
@@ -143,42 +194,23 @@ export function createRoleService({
     },
 
     async scoreResume(roleId: string, file: UploadedFile): Promise<Run> {
-      const role = await requireRole(roleId);
-      if (!role.currentRubricVersion) throw new ServiceError("Generate a rubric first.");
-      const rubric = await store.getRubric(roleId, role.currentRubricVersion);
-      if (!rubric) throw new ServiceError("This role's current rubric is missing on disk.");
-
+      const rubric = await requireCurrentRubric(roleId);
       const extracted = await extractOrExplain(file);
-
-      const request = buildDecisionRequest(rubric, extracted.text, decisionModel);
-      const started = performance.now();
-      let response: Decision | null = null;
-      let error: string | null = null;
-      try {
-        response = await gateway.decide(request);
-      } catch (caught) {
-        error = errorMessage(caught);
-      }
-      const latencyMs = Math.round(performance.now() - started);
-
-      const run: Run = {
-        id: newId(),
-        roleId,
-        rubricVersion: rubric.version,
-        createdAt: now().toISOString(),
-        resume: { fileName: file.fileName, kind: extracted.kind, chars: extracted.text.length },
-        request,
-        response,
-        latencyMs,
-        costUsd: response ? costUsd(response.usage) : 0,
-        error,
-      };
-      await store.saveRun(run, extracted.text);
-      return run;
+      return decideAndSave(roleId, rubric, { fileName: file.fileName, kind: extracted.kind }, extracted.text);
     },
 
-    async listRuns(roleId: string): Promise<Run[]> {
-      return store.listRuns(roleId);
+    /** Scores a past run's stored resume text against the current rubric, as a new run. */
+    async rescoreRun(roleId: string, runId: string): Promise<Run> {
+      const [run, resumeText] = await Promise.all([store.getRun(roleId, runId), store.getResumeText(roleId, runId)]);
+      if (!run || resumeText === null) throw new ServiceError("That run no longer exists.");
+      const rubric = await requireCurrentRubric(roleId);
+      return decideAndSave(roleId, rubric, run.resume, resumeText);
+    },
+
+    /** Runs newest first, each marked stale when scored on an older rubric version. */
+    async listRunHistory(roleId: string): Promise<RunHistoryItem[]> {
+      const [role, runs] = await Promise.all([store.getRole(roleId), store.listRuns(roleId)]);
+      return runs.map((run) => ({ run, stale: isStale(run, role) }));
     },
 
     async getResumeText(roleId: string, runId: string): Promise<string | null> {
@@ -186,13 +218,13 @@ export function createRoleService({
     },
 
     async getRunView(roleId: string, runId: string, lowConfidenceThreshold: number): Promise<RunView | null> {
-      const run = await store.getRun(roleId, runId);
+      const [run, role] = await Promise.all([store.getRun(roleId, runId), store.getRole(roleId)]);
       if (!run) return null;
       const rubric = await store.getRubric(roleId, run.rubricVersion);
       const resumeText = await store.getResumeText(roleId, runId);
       const decision = runDecision(run);
       const scorecard = rubric && decision ? toScorecard(rubric, decision, lowConfidenceThreshold) : null;
-      return { run, rubric, scorecard, resumeText };
+      return { run, rubric, scorecard, resumeText, stale: isStale(run, role) };
     },
 
     /**
@@ -223,6 +255,10 @@ export type RoleService = ReturnType<typeof createRoleService>;
 
 /** An error whose message is safe to show to the user. */
 export class ServiceError extends Error {}
+
+function isStale(run: Run, role: Role | null): boolean {
+  return role?.currentRubricVersion != null && run.rubricVersion < role.currentRubricVersion;
+}
 
 /** Extracts text, turning any failure into a message safe to show the user. */
 async function extractOrExplain(file: UploadedFile) {

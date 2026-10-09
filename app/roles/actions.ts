@@ -83,3 +83,15 @@ export async function previewJdAction(_prev: PreviewState, formData: FormData): 
     throw error;
   }
 }
+
+export async function rescoreAction(roleId: string, runId: string, _prev: ActionState): Promise<ActionState> {
+  const { service } = await requireApp();
+  let newRunId: string;
+  try {
+    newRunId = (await service.rescoreRun(roleId, runId)).id;
+  } catch (error) {
+    if (error instanceof ServiceError) return { error: error.message };
+    throw error;
+  }
+  redirect(`/roles/${roleId}/runs/${newRunId}`);
+}

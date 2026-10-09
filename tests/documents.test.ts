@@ -81,6 +81,6 @@ describe("role service — documents", () => {
       /no extractable text/i,
     );
     expect(gateway.calls.decide).toHaveLength(0);
-    expect(await service.listRuns(role.id)).toEqual([]);
+    expect(await service.listRunHistory(role.id)).toEqual([]);
   });
 });

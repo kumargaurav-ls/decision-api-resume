@@ -51,7 +51,7 @@ describe("role service — score resume", () => {
     });
     expect(run.costUsd).toBeCloseTo(0.0002, 10);
     expect(run.latencyMs).toBeGreaterThanOrEqual(0);
-    expect(await service.listRuns(role.id)).toEqual([run]);
+    expect(await service.listRunHistory(role.id)).toEqual([{ run, stale: false }]);
     expect(await service.getResumeText(role.id, run.id)).toContain("Priya Raman");
   });
 
@@ -106,6 +106,6 @@ describe("role service — score resume", () => {
     expect(run.error).toMatch(/503 upstream unavailable/);
     expect(run.costUsd).toBe(0);
     expect((await service.getRunView(role.id, run.id, 0.6))?.scorecard).toBeNull();
-    expect(await service.listRuns(role.id)).toHaveLength(1);
+    expect(await service.listRunHistory(role.id)).toHaveLength(1);
   });
 });
