@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { buttonVariants } from "@/components/ui/button";
 import { GenerateRubricButton } from "@/components/generate-rubric-button";
 import { ResumeUpload } from "@/components/resume-upload";
 import { RunHistory } from "@/components/run-history";
@@ -49,7 +50,14 @@ async function RoleDetail({ params }: { params: Promise<{ id: string }> }) {
       <section className="mt-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold tracking-tight">Rubric</h2>
-          {rubric && <GenerateRubricButton roleId={role.id} model={app.config.rubricModel} regenerate />}
+          {rubric && (
+            <div className="flex flex-wrap items-start gap-2">
+              <Link href={`/roles/${role.id}/rubric`} className={buttonVariants({ variant: "outline" })}>
+                Edit rubric
+              </Link>
+              <GenerateRubricButton roleId={role.id} model={app.config.rubricModel} regenerate />
+            </div>
+          )}
         </div>
         <div className="mt-4">
           {rubric ? (

@@ -1,13 +1,13 @@
 "use client";
 
 import { useActionState } from "react";
-import { scoreResumeAction, type FormState } from "@/app/roles/actions";
+import { scoreResumeAction, type ActionState } from "@/app/roles/actions";
 import { Button } from "@/components/ui/button";
 
-const initialFormState: FormState = { error: null };
+const initialActionState: ActionState = { error: null };
 
 export function ResumeUpload({ roleId, model }: { roleId: string; model: string }) {
-  const [state, formAction, pending] = useActionState(scoreResumeAction.bind(null, roleId), initialFormState);
+  const [state, formAction, pending] = useActionState(scoreResumeAction.bind(null, roleId), initialActionState);
   return (
     <form action={formAction} className="rounded-xl border border-dashed px-5 py-6">
       <label htmlFor="resume" className="text-sm font-medium">

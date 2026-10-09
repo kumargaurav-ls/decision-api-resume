@@ -1,16 +1,16 @@
 "use client";
 
 import { useActionState } from "react";
-import { createRoleAction, type FormState } from "@/app/roles/actions";
+import { createRoleAction, type ActionState } from "@/app/roles/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-const initialFormState: FormState = { error: null };
+const initialActionState: ActionState = { error: null };
 
 export function NewRoleForm() {
-  const [state, formAction, pending] = useActionState(createRoleAction, initialFormState);
+  const [state, formAction, pending] = useActionState(createRoleAction, initialActionState);
   return (
     <form action={formAction} className="mt-8 space-y-6">
       <div className="space-y-2">

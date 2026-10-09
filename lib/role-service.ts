@@ -76,7 +76,7 @@ export function createRoleService({
       }
       const parsed = RubricBody.safeParse(raw);
       if (parsed.success) return parsed.data;
-      lastIssue = parsed.error.issues[0]?.message ?? "schema mismatch";
+      lastIssue = describeIssue(parsed.error);
     }
     throw new ServiceError(
       `The model returned an invalid rubric ${MAX_DRAFT_ATTEMPTS} times (${lastIssue}). Try generating again.`,
@@ -191,6 +191,22 @@ export function createRoleService({
       return { run, rubric, scorecard, resumeText };
     },
 
+    /**
+     * Saves an edited rubric as the next version. Earlier versions are never touched.
+     * `baseVersion` is the version the editor opened; a save on a stale base is refused.
+     */
+    async saveRubric(roleId: string, body: unknown, baseVersion: number): Promise<Rubric> {
+      const role = await requireRole(roleId);
+      if (role.currentRubricVersion !== baseVersion) {
+        throw new ServiceError(
+          `The rubric changed since you opened it (now v${role.currentRubricVersion}). Reload the editor to edit the latest version.`,
+        );
+      }
+      const parsed = RubricBody.safeParse(body);
+      if (!parsed.success) throw new ServiceError(`The rubric isn't valid — ${describeIssue(parsed.error)}`);
+      return saveNextRubric(role, parsed.data, "edited");
+    },
+
     async getCurrentRubric(roleId: string): Promise<Rubric | null> {
       const role = await store.getRole(roleId);
       if (!role?.currentRubricVersion) return null;
@@ -203,6 +219,13 @@ export type RoleService = ReturnType<typeof createRoleService>;
 
 /** An error whose message is safe to show to the user. */
 export class ServiceError extends Error {}
+
+/** First zod issue as "path: message" for user-facing errors. */
+function describeIssue(error: { issues: { path: PropertyKey[]; message: string }[] }): string {
+  const issue = error.issues[0];
+  if (!issue) return "schema mismatch";
+  return issue.path.length ? `${issue.path.join(".")}: ${issue.message}` : issue.message;
+}
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);

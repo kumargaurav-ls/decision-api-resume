@@ -5,9 +5,9 @@ import { redirect } from "next/navigation";
 import { requireApp } from "@/lib/app";
 import { ServiceError } from "@/lib/role-service";
 
-export type FormState = { error: string | null };
+export type ActionState = { error: string | null };
 
-export async function createRoleAction(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function createRoleAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const { service } = await requireApp();
   let roleId: string;
   try {
@@ -23,7 +23,7 @@ export async function createRoleAction(_prev: FormState, formData: FormData): Pr
   redirect(`/roles/${roleId}`);
 }
 
-export async function generateRubricAction(roleId: string, _prev: FormState): Promise<FormState> {
+export async function generateRubricAction(roleId: string, _prev: ActionState): Promise<ActionState> {
   const { service } = await requireApp();
   try {
     await service.generateRubric(roleId);
@@ -35,7 +35,7 @@ export async function generateRubricAction(roleId: string, _prev: FormState): Pr
   return { error: null };
 }
 
-export async function scoreResumeAction(roleId: string, _prev: FormState, formData: FormData): Promise<FormState> {
+export async function scoreResumeAction(roleId: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
   const { service } = await requireApp();
   const file = formData.get("resume");
   if (!(file instanceof File) || file.size === 0) return { error: "Choose a PDF or DOCX resume first." };
@@ -49,4 +49,16 @@ export async function scoreResumeAction(roleId: string, _prev: FormState, formDa
     throw error;
   }
   redirect(`/roles/${roleId}/runs/${runId}`);
+}
+
+/** Called directly from the rubric editor (not a form), so it takes the rubric object. */
+export async function saveRubricAction(roleId: string, rubric: unknown, baseVersion: number): Promise<ActionState> {
+  const { service } = await requireApp();
+  try {
+    await service.saveRubric(roleId, rubric, baseVersion);
+  } catch (error) {
+    if (error instanceof ServiceError) return { error: error.message };
+    throw error;
+  }
+  redirect(`/roles/${roleId}`);
 }

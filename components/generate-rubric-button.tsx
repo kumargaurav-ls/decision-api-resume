@@ -1,10 +1,10 @@
 "use client";
 
 import { useActionState } from "react";
-import { generateRubricAction, type FormState } from "@/app/roles/actions";
+import { generateRubricAction, type ActionState } from "@/app/roles/actions";
 import { Button } from "@/components/ui/button";
 
-const initialFormState: FormState = { error: null };
+const initialActionState: ActionState = { error: null };
 
 export function GenerateRubricButton({
   roleId,
@@ -15,7 +15,7 @@ export function GenerateRubricButton({
   model: string;
   regenerate?: boolean;
 }) {
-  const [state, formAction, pending] = useActionState(generateRubricAction.bind(null, roleId), initialFormState);
+  const [state, formAction, pending] = useActionState(generateRubricAction.bind(null, roleId), initialActionState);
   return (
     <form action={formAction} className="flex flex-col items-start gap-2">
       <Button type="submit" variant={regenerate ? "outline" : "default"} disabled={pending}>

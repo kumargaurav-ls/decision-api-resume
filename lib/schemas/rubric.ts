@@ -12,7 +12,7 @@ export const RUBRIC_LIMITS = {
 
 const Key = z
   .string()
-  .regex(/^[a-z0-9_]+$/, "Use lowercase letters, digits and underscores");
+  .regex(/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/, "Use lowercase snake_case, e.g. python_depth");
 
 export const Level = z.object({
   label: z.enum(LEVEL_LABELS),
