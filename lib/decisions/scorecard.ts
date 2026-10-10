@@ -1,4 +1,4 @@
-import type { Decision } from "../gateway";
+import type { Decision, DecisionCreateParams } from "../gateway";
 import type { Rubric } from "../schemas/rubric";
 import { questionName } from "./build-questions";
 
@@ -93,6 +93,17 @@ export function toScorecard(rubric: Rubric, response: Decision, lowConfidenceThr
 /** A run's stored response as a Decision (the store keeps it as opaque JSON). */
 export function runDecision(run: { response: unknown }): Decision | null {
   return (run.response as Decision | null) ?? null;
+}
+
+/** A run's stored request as the Decisions request body it was. */
+export function runRequest(run: { request: unknown }): DecisionCreateParams {
+  return run.request as DecisionCreateParams;
+}
+
+/** Token usage of a run's response, or null when the call failed. */
+export function runUsage(run: { response: unknown }): { input: number; output: number; total: number } | null {
+  const usage = runDecision(run)?.usage;
+  return usage ? { input: usage.input_tokens, output: usage.output_tokens, total: usage.total_tokens } : null;
 }
 
 /** The overall-fit answer alone, for history lists (no rubric needed). */
