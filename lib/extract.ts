@@ -51,6 +51,9 @@ export async function extractText(file: UploadedFile): Promise<ExtractedText> {
   return { kind, text, pages: null };
 }
 
+/** File extensions the extractor recognises (legacy .doc is recognised only to reject it clearly). */
+export const DOCUMENT_EXTENSIONS = [".pdf", ".docx", ".doc"] as const;
+
 function documentKind(fileName: string): DocumentKind | "doc" | null {
   const extension = fileName.toLowerCase().split(".").pop();
   if (extension === "pdf" || extension === "docx" || extension === "doc") return extension;

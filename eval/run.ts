@@ -11,6 +11,7 @@ import { createOpenAIGateway } from "../lib/gateway-openai";
 import { evaluateFixture } from "./evaluate";
 import { loadFixtures } from "./fixtures";
 import { pct, renderReport } from "./report";
+import { resolveFixturesDir, type EvalMode } from "./run-options";
 
 async function main() {
   loadEnvConfig(process.cwd());
@@ -20,7 +21,17 @@ async function main() {
   }
   const { config } = result;
 
-  const fixturesDir = path.join(process.cwd(), "eval", "fixtures");
+  let fixturesDir: string;
+  let mode: EvalMode;
+  try {
+    ({ dir: fixturesDir, mode } = resolveFixturesDir({
+      private: process.argv.includes("--private"),
+      privateEvalDir: config.privateEvalDir,
+      cwd: process.cwd(),
+    }));
+  } catch (error) {
+    fail((error as Error).message);
+  }
   const gateway = config.mockMode
     ? createMockGateway()
     : createOpenAIGateway({ apiKey: config.openaiApiKey!, rubricModel: config.rubricModel });
@@ -37,7 +48,7 @@ async function main() {
     results.push(r);
   }
 
-  const report = renderReport(results, { mode: "synthetic", model: config.decisionModel, mock: config.mockMode });
+  const report = renderReport(results, { mode, model: config.decisionModel, mock: config.mockMode });
   await writeFile("eval-report.md", report);
   await writeFile("eval-results.json", JSON.stringify(results, null, 2) + "\n");
   console.log(`\nWrote eval-report.md and eval-results.json${config.mockMode ? " (mock mode: numbers are not meaningful)" : ""}.`);

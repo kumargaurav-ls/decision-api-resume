@@ -5,12 +5,10 @@ import type { FitValue } from "../lib/schemas/rubric";
 import { createStore } from "../lib/store";
 import type { Fixture } from "./fixtures";
 import {
-  binaryAccuracy,
   brierBinary,
   brierMulticlass,
   confidentMisses,
   confusionMatrix,
-  fitAccuracy,
   reliability,
   type ReliabilityBin,
 } from "./metrics";
@@ -33,6 +31,8 @@ export type FixtureResult = {
   cases: EvalCase[];
   metrics: {
     fitAccuracy: number;
+    /** Raw counts behind the accuracies, so totals across fixtures stay exact. */
+    counts: { fitCorrect: number; fitTotal: number; mustHaveCorrect: number; mustHaveTotal: number };
     confusion: number[][];
     mustHaveAccuracy: number;
     brierFit: number;
@@ -62,8 +62,9 @@ export async function evaluateFixture(
   const cases: EvalCase[] = [];
   for (const resume of fixture.resumes) {
     const label = fixture.labels[resume.file];
-    const run = await service.scoreResumeText(role.id, { fileName: resume.file, text: resume.text });
-    const decision = runDecision(run);
+    // Files the extractor rejected are never scored; they become unanswered cases.
+    const run = resume.text === null ? null : await service.scoreResumeText(role.id, { fileName: resume.file, text: resume.text });
+    const decision = run ? runDecision(run) : null;
     const card = decision ? toScorecard(fixture.rubric, decision, 0) : null;
     const fit = card?.fit.kind === "choice" ? card.fit : null;
     cases.push({
@@ -77,7 +78,7 @@ export async function evaluateFixture(
         const answer = card?.mustHaves.find((m) => m.key === key)?.answer;
         return { key, expected, probability: answer?.kind === "predicate" ? answer.probability : null };
       }),
-      error: run.error,
+      error: resume.error ?? run?.error ?? null,
     });
   }
   return { fixture: fixture.name, rubricVersion: fixture.rubric.version, cases, metrics: computeMetrics(cases) };
@@ -106,12 +107,16 @@ function computeMetrics(cases: EvalCase[]): FixtureResult["metrics"] {
     correct: (p.probability >= 0.5) === p.expected,
   }));
 
+  const fitCorrect = answered.filter((c) => c.expected === c.predicted).length;
+  const mustHaveCorrect = predicates.filter((p) => (p.probability >= 0.5) === p.expected).length;
+
   return {
+    counts: { fitCorrect, fitTotal: cases.length, mustHaveCorrect, mustHaveTotal: allPredicates.length },
     // Unanswered fits count as wrong: the accuracy is over every labelled resume.
-    fitAccuracy: fitAccuracy(cases.map((c) => ({ expected: c.expected, predicted: c.predicted ?? "unanswered" }))),
+    fitAccuracy: cases.length ? fitCorrect / cases.length : 0,
     confusion: confusionMatrix(answered),
     // Unanswered must-haves count as wrong, like unanswered fits.
-    mustHaveAccuracy: allPredicates.length ? (binaryAccuracy(predicates) * predicates.length) / allPredicates.length : 0,
+    mustHaveAccuracy: allPredicates.length ? mustHaveCorrect / allPredicates.length : 0,
     brierFit: brierMulticlass(answered),
     brierMustHaves: brierBinary(predicates),
     reliability: bins,

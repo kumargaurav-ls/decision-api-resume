@@ -1,11 +1,21 @@
 import { FIT_VALUES } from "../lib/schemas/rubric";
 import type { FixtureResult } from "./evaluate";
+import type { EvalMode } from "./run-options";
 
 export const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
 const num = (x: number) => x.toFixed(3);
 
+/** Totals across fixtures from raw counts (Brier and ECE are per-fixture only). */
+function overallRow(results: FixtureResult[]): string {
+  const sum = (pick: (c: FixtureResult["metrics"]["counts"]) => number) => results.reduce((n, r) => n + pick(r.metrics.counts), 0);
+  const fitTotal = sum((c) => c.fitTotal);
+  const mustTotal = sum((c) => c.mustHaveTotal);
+  const ratio = (correct: number, total: number) => pct(total ? correct / total : 0);
+  return `| **Overall** | ${fitTotal} | ${ratio(sum((c) => c.fitCorrect), fitTotal)} | ${ratio(sum((c) => c.mustHaveCorrect), mustTotal)} | - | - |`;
+}
+
 /** Markdown report covering every fixture plus an overall summary. */
-export function renderReport(results: FixtureResult[], meta: { mode: "synthetic" | "private"; model: string; mock?: boolean }): string {
+export function renderReport(results: FixtureResult[], meta: { mode: EvalMode; model: string; mock?: boolean }): string {
   const lines: string[] = [
     `# Decisions API eval report`,
     ``,
@@ -21,6 +31,7 @@ export function renderReport(results: FixtureResult[], meta: { mode: "synthetic"
       (r) =>
         `| ${r.fixture} | ${r.cases.length} | ${pct(r.metrics.fitAccuracy)} | ${pct(r.metrics.mustHaveAccuracy)} | ${num(r.metrics.brierFit)} | ${num(r.metrics.ece)} |`,
     ),
+    ...(results.length > 1 ? [overallRow(results)] : []),
     ``,
     `Brier: 0 is perfect (fit: worst 2; must-haves: coin flip 0.25). ECE: gap between confidence and accuracy, 0 is perfectly calibrated.`,
   ];

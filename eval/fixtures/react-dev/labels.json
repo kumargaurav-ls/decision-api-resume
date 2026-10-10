@@ -1,0 +1,111 @@
+{
+  "_note": "Draft labels written by Claude for Kumar to review. Rubric is hand-written (mock mode cannot generate a role-specific rubric); regenerate with a real key and re-freeze if preferred.",
+  "01-ines-carvalho.md": {
+    "profile": "clear fit",
+    "fit": "strong_fit",
+    "mustHaves": {
+      "react_5y": true,
+      "typescript_prod": true,
+      "shipped_accessible_ui": true
+    }
+  },
+  "02-kenji-watanabe.md": {
+    "profile": "clear fit",
+    "fit": "strong_fit",
+    "mustHaves": {
+      "react_5y": true,
+      "typescript_prod": true,
+      "shipped_accessible_ui": true
+    }
+  },
+  "03-amara-nwosu.md": {
+    "profile": "clear fit",
+    "fit": "strong_fit",
+    "mustHaves": {
+      "react_5y": true,
+      "typescript_prod": true,
+      "shipped_accessible_ui": true
+    }
+  },
+  "04-gaurav-bansal.md": {
+    "profile": "clear miss",
+    "fit": "weak_fit",
+    "mustHaves": {
+      "react_5y": false,
+      "typescript_prod": false,
+      "shipped_accessible_ui": false
+    }
+  },
+  "05-olga-petrova.md": {
+    "profile": "clear miss",
+    "fit": "weak_fit",
+    "mustHaves": {
+      "react_5y": false,
+      "typescript_prod": false,
+      "shipped_accessible_ui": false
+    }
+  },
+  "06-sam-turner.md": {
+    "profile": "clear miss",
+    "fit": "weak_fit",
+    "mustHaves": {
+      "react_5y": false,
+      "typescript_prod": false,
+      "shipped_accessible_ui": false
+    }
+  },
+  "07-diego-ramos.md": {
+    "profile": "borderline",
+    "fit": "possible_fit",
+    "mustHaves": {
+      "react_5y": true,
+      "typescript_prod": false,
+      "shipped_accessible_ui": true
+    }
+  },
+  "08-chloe-martin.md": {
+    "profile": "borderline",
+    "fit": "possible_fit",
+    "mustHaves": {
+      "react_5y": false,
+      "typescript_prod": true,
+      "shipped_accessible_ui": true
+    }
+  },
+  "09-viktor-hale.md": {
+    "profile": "keyword-stuffed",
+    "fit": "weak_fit",
+    "mustHaves": {
+      "react_5y": false,
+      "typescript_prod": false,
+      "shipped_accessible_ui": false
+    }
+  },
+  "10-rahul-verma.md": {
+    "profile": "keyword-stuffed",
+    "fit": "weak_fit",
+    "mustHaves": {
+      "react_5y": false,
+      "typescript_prod": false,
+      "shipped_accessible_ui": false
+    }
+  },
+  "11-mei-lin.md": {
+    "profile": "adjacent role",
+    "fit": "weak_fit",
+    "mustHaves": {
+      "react_5y": false,
+      "typescript_prod": false,
+      "shipped_accessible_ui": false
+    }
+  },
+  "12-liam-oconnor.md": {
+    "profile": "prompt injection",
+    "fit": "weak_fit",
+    "mustHaves": {
+      "react_5y": false,
+      "typescript_prod": false,
+      "shipped_accessible_ui": false
+    }
+  }
+}

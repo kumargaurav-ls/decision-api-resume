@@ -1,0 +1,85 @@
+{
+  "roleSummary": "A senior frontend engineer who owns a React and TypeScript codebase and its design system, ships accessible and fast UI with Next.js, and mentors other engineers.",
+  "dimensions": [
+    {
+      "key": "react_depth",
+      "name": "React depth",
+      "instructions": "Judge professional React experience: years in paid roles and complexity of the apps built.",
+      "levels": [
+        { "label": "None", "description": "No React mentioned." },
+        { "label": "Basic", "description": "Tutorials, personal projects or under one year of professional React." },
+        { "label": "Working", "description": "One to three years building React features in a team." },
+        { "label": "Strong", "description": "Three to five years; owned complex React apps in production." },
+        { "label": "Expert", "description": "Five or more years; architected large React codebases used by many engineers." }
+      ]
+    },
+    {
+      "key": "typescript",
+      "name": "TypeScript",
+      "instructions": "Judge hands-on TypeScript use in production code, not just listing it.",
+      "levels": [
+        { "label": "None", "description": "No TypeScript mentioned." },
+        { "label": "Basic", "description": "Listed as a skill without described use." },
+        { "label": "Working", "description": "Writes typed components and props day to day." },
+        { "label": "Strong", "description": "Designs shared types and strict configurations for a codebase." },
+        { "label": "Expert", "description": "Leads TypeScript migrations or authors typed libraries used by others." }
+      ]
+    },
+    {
+      "key": "accessibility",
+      "name": "Accessibility",
+      "instructions": "Judge shipped accessibility work: WCAG conformance, audits, keyboard and screen-reader support.",
+      "levels": [
+        { "label": "None", "description": "No accessibility work mentioned." },
+        { "label": "Basic", "description": "Mentions accessibility without concrete work." },
+        { "label": "Working", "description": "Fixed accessibility issues in shipped features." },
+        { "label": "Strong", "description": "Brought a product to WCAG AA and kept it there." },
+        { "label": "Expert", "description": "Led accessibility programmes or audits across several products." }
+      ]
+    },
+    {
+      "key": "design_systems",
+      "name": "Design systems",
+      "instructions": "Judge building or maintaining a shared component library or design system.",
+      "levels": [
+        { "label": "None", "description": "No component library or design system work." },
+        { "label": "Basic", "description": "Used a design system built by others." },
+        { "label": "Working", "description": "Contributed components to a shared library." },
+        { "label": "Strong", "description": "Owned a design system used by several teams or products." },
+        { "label": "Expert", "description": "Created a design system from scratch, with tokens, docs and adoption across an organisation." }
+      ]
+    },
+    {
+      "key": "testing",
+      "name": "Testing discipline",
+      "instructions": "Judge unit and end-to-end testing of frontend code (Jest/Vitest, Testing Library, Playwright, Cypress).",
+      "levels": [
+        { "label": "None", "description": "No frontend testing mentioned." },
+        { "label": "Basic", "description": "Lists testing tools without described practice." },
+        { "label": "Working", "description": "Writes unit tests for components." },
+        { "label": "Strong", "description": "Maintains unit and end-to-end suites in CI." },
+        { "label": "Expert", "description": "Set the testing strategy for a frontend organisation." }
+      ]
+    }
+  ],
+  "mustHaves": [
+    { "key": "react_5y", "statement": "The candidate has 5 or more years of professional React experience." },
+    { "key": "typescript_prod", "statement": "The candidate uses TypeScript in production code." },
+    { "key": "shipped_accessible_ui", "statement": "The candidate has shipped accessible UI (WCAG AA) to production users." }
+  ],
+  "redFlags": [
+    { "key": "keyword_stuffing", "statement": "The resume lists frontend frameworks or tools that no role description backs up with concrete work." },
+    { "key": "no_recent_frontend", "statement": "The candidate has not done frontend work in the last two years." }
+  ],
+  "fit": {
+    "instructions": "Decide how well the candidate fits the role overall.",
+    "options": [
+      { "value": "strong_fit", "description": "Meets every must-have and shows real design-system and testing depth." },
+      { "value": "possible_fit", "description": "Misses one must-have, or depth in design systems or testing is unclear." },
+      { "value": "weak_fit", "description": "Misses several must-haves, or frontend work is superficial." }
+    ]
+  },
+  "version": 1,
+  "createdAt": "2026-10-10T00:00:00.000Z",
+  "source": "edited"
+}

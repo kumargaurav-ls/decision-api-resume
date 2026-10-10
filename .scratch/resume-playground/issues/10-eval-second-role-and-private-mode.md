@@ -8,11 +8,15 @@ See spec: User Stories 57, 65–66.
 
 **Blocked by:** 09 — Eval: AI Engineer fixture + eval command
 
-**Status:** ready-for-agent
+**Status:** done (label approval pending)
 
-- [ ] React developer fixture: JD, frozen rubric, ~12 resumes across the same six profiles, labels approved by Kumar
-- [ ] Report sections per fixture plus an overall summary
-- [ ] Private flag reads the configured private directory; unset → clear error, no empty report
-- [ ] Private fixtures may contain PDF/DOCX resumes, extracted with the same guards
-- [ ] 3–4 fixture resumes committed as text-based PDF and DOCX
-- [ ] Manual check: eval over both fixtures; private flag with and without the directory set
+- [ ] React developer fixture: JD, frozen rubric, ~12 resumes across the same six profiles, labels approved by Kumar — _fixture written (JD, hand-written rubric frozen as v1 `source: edited`, 12 resumes, six profiles); **labels are drafts awaiting Kumar's approval**_
+- [x] Report sections per fixture plus an overall summary
+- [x] Private flag reads the configured private directory; unset → clear error, no empty report
+- [x] Private fixtures may contain PDF/DOCX resumes, extracted with the same guards
+- [x] 3–4 fixture resumes committed as text-based PDF and DOCX
+- [x] Manual check: eval over both fixtures; private flag with and without the directory set — _mock mode: both fixtures + overall row; `--private` unset → clear error; set → PDF extracted, scanned PDF recorded unanswered; sample PDF/DOCX uploaded through the app in headless Chrome_
+
+## Comments
+
+- 2026-10-10 — Implemented. Review fixes: resume 07 adjusted so its `possible_fit` label misses exactly one must-have; single case-building path for rejected and scored resumes; FixtureResume as a discriminated union; document extensions come from `lib/extract`; overall row from raw counts with zero guard; named `EvalMode`.
