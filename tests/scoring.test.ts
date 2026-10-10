@@ -109,3 +109,40 @@ describe("role service — score resume", () => {
     expect(await service.listRunHistory(role.id)).toHaveLength(1);
   });
 });
+
+describe("role service — parse, then score", () => {
+  it("parses a resume without calling the Decisions API and reports how long parsing took", async () => {
+    const { service, gateway, role } = await setup();
+    await service.generateRubric(role.id);
+
+    const parsed = await service.previewDocument({ fileName: "priya.pdf", bytes: await pdf() });
+
+    expect(gateway.calls.decide).toHaveLength(0);
+    expect(parsed.kind).toBe("pdf");
+    expect(parsed.text).toContain("Priya Raman");
+    expect(parsed.parseMs).toBeGreaterThanOrEqual(0);
+  });
+
+  it("scores parsed text in one Decisions call and keeps the parse time on the run", async () => {
+    const { service, gateway, role } = await setup();
+    await service.generateRubric(role.id);
+    const parsed = await service.previewDocument({ fileName: "priya.pdf", bytes: await pdf() });
+
+    const run = await service.scoreParsedResume(role.id, { fileName: "priya.pdf", kind: parsed.kind, text: parsed.text, parseMs: 42 });
+
+    expect(gateway.calls.decide).toHaveLength(1);
+    expect(gateway.calls.decide[0].input).toContain("retrieval-augmented clinical notes assistant");
+    expect(run).toMatchObject({ resume: { fileName: "priya.pdf", kind: "pdf", chars: parsed.text.length }, parseMs: 42, error: null });
+    expect(await service.getResumeText(role.id, run.id)).toBe(parsed.text);
+  });
+
+  it("normalises parsed text from the form and refuses empty text", async () => {
+    const { service, role } = await setup();
+    await service.generateRubric(role.id);
+
+    const run = await service.scoreParsedResume(role.id, { fileName: "a.docx", kind: "docx", text: "Line one\r\nLine two\r\n", parseMs: 5 });
+    expect(await service.getResumeText(role.id, run.id)).toBe("Line one\nLine two");
+
+    await expect(service.scoreParsedResume(role.id, { fileName: "b.pdf", kind: "pdf", text: "  \r\n ", parseMs: 5 })).rejects.toThrow(/no text/i);
+  });
+});

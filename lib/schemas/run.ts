@@ -16,6 +16,8 @@ export const Run = z.object({
   /** Raw Decision object; null when the call failed. */
   response: z.unknown().nullable(),
   latencyMs: z.number().nonnegative(),
+  /** Time spent extracting the resume text before scoring; absent on older runs and plain-text scores. */
+  parseMs: z.number().nonnegative().optional(),
   costUsd: z.number().nonnegative(),
   error: z.string().nullable(),
 });

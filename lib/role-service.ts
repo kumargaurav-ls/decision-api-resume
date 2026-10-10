@@ -25,7 +25,7 @@ export type RoleSummary = {
 /** JD text plus where it came from (pasted, or extracted from an uploaded file). */
 export type JdInput = { kind: JdSource; text: string };
 
-export type DocumentPreview = { kind: DocumentKind; text: string; chars: number };
+export type DocumentPreview = { kind: DocumentKind; text: string; chars: number; parseMs: number };
 
 /** A run with the rubric it was scored on (null if that file is gone) and its parsed scorecard. */
 export type RunHistoryItem = { run: Run; stale: boolean };
@@ -74,6 +74,7 @@ export function createRoleService({
     rubric: Rubric,
     resume: Pick<Run["resume"], "fileName" | "kind">,
     resumeText: string,
+    parseMs?: number,
   ): Promise<Run> {
     const request = buildDecisionRequest(rubric, resumeText, decisionModel);
     const started = performance.now();
@@ -95,6 +96,7 @@ export function createRoleService({
       request,
       response,
       latencyMs,
+      ...(parseMs === undefined ? {} : { parseMs }),
       costUsd: response ? costUsd(response.usage) : 0,
       error,
     };
@@ -181,8 +183,10 @@ export function createRoleService({
 
     /** Extracts an uploaded document's text so the user can check it before using it. */
     async previewDocument(file: UploadedFile): Promise<DocumentPreview> {
+      const started = performance.now();
       const extracted = await extractOrExplain(file);
-      return { kind: extracted.kind, text: extracted.text, chars: extracted.text.length };
+      const parseMs = Math.round(performance.now() - started);
+      return { kind: extracted.kind, text: extracted.text, chars: extracted.text.length, parseMs };
     },
 
     async generateRubric(roleId: string): Promise<Rubric> {
@@ -210,6 +214,20 @@ export function createRoleService({
       await store.saveRubric(role.id, parsed.data);
       await store.saveRole({ ...role, currentRubricVersion: parsed.data.version });
       return parsed.data;
+    },
+
+    /**
+     * Second step of the upload flow: scores text the user already parsed and checked with
+     * previewDocument. The text round-trips through the form, so it is normalised again here.
+     */
+    async scoreParsedResume(
+      roleId: string,
+      resume: { fileName: string; kind: DocumentKind; text: string; parseMs: number },
+    ): Promise<Run> {
+      const rubric = await requireCurrentRubric(roleId);
+      const text = normaliseText(resume.text);
+      if (!text) throw new ServiceError(`"${resume.fileName}" has no text.`);
+      return decideAndSave(roleId, rubric, { fileName: resume.fileName, kind: resume.kind }, text, resume.parseMs);
     },
 
     /** Scores resume text that is already plain text (used by the eval harness). Same path as uploads. */

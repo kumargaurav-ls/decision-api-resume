@@ -4,7 +4,10 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireApp } from "@/lib/app";
 import { ServiceError, type DocumentPreview } from "@/lib/role-service";
+import { z } from "zod";
 import { JdSource } from "@/lib/schemas/role";
+
+const DocumentKind = z.enum(["pdf", "docx"]);
 
 export type ActionState = { error: string | null };
 
@@ -40,14 +43,38 @@ export async function generateRubricAction(roleId: string, _prev: ActionState): 
   return { error: null };
 }
 
-export async function scoreResumeAction(roleId: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
+/** Step 1 of scoring: extracts the resume so the user can check the text. No API call. */
+export async function previewResumeAction(_prev: PreviewState, formData: FormData): Promise<PreviewState> {
   const { service } = await requireApp();
   const file = formData.get("resume");
-  if (!(file instanceof File) || file.size === 0) return { error: "Choose a PDF or DOCX resume first." };
+  if (!(file instanceof File) || file.size === 0) return { error: "Choose a PDF or DOCX resume first.", preview: null };
+  try {
+    const preview = await service.previewDocument({ fileName: file.name, bytes: new Uint8Array(await file.arrayBuffer()) });
+    return { error: null, preview: { ...preview, fileName: file.name } };
+  } catch (error) {
+    if (error instanceof ServiceError) return { error: error.message, preview: null };
+    throw error;
+  }
+}
+
+/**
+ * Step 2 of scoring: one Decisions call on the text parsed in step 1, which comes back via hidden
+ * inputs. Acceptable for a local single-user tool, same as the JD upload flow.
+ */
+export async function scoreParsedResumeAction(roleId: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { service } = await requireApp();
+  const kind = DocumentKind.safeParse(formData.get("kind"));
+  if (!kind.success) return { error: "Parse a PDF or DOCX resume first." };
+  const parseMs = Number(formData.get("parseMs"));
 
   let runId: string;
   try {
-    const run = await service.scoreResume(roleId, { fileName: file.name, bytes: new Uint8Array(await file.arrayBuffer()) });
+    const run = await service.scoreParsedResume(roleId, {
+      fileName: String(formData.get("fileName") ?? "resume"),
+      kind: kind.data,
+      text: String(formData.get("text") ?? ""),
+      parseMs: Number.isFinite(parseMs) && parseMs >= 0 ? parseMs : 0,
+    });
     runId = run.id;
   } catch (error) {
     if (error instanceof ServiceError) return { error: error.message };

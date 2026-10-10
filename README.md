@@ -30,7 +30,7 @@ Then:
 
 1. **New role**: paste a job description, or upload a text-based PDF / DOCX.
 2. **Generate rubric** (uses `OPENAI_RUBRIC_MODEL`, default `gpt-6.1-sol`), then **Edit rubric** if you like.
-3. **Score a resume**: upload a PDF or DOCX. Try the samples in `eval/sample-uploads/`.
+3. **Score a resume**: upload a PDF or DOCX and click **Parse resume** to check the extracted text (no API call), then click **Score with gpt-6-luna**. Try the samples in `eval/sample-uploads/`.
 
 ## What the Decisions API does
 
@@ -67,7 +67,7 @@ Edit a rubric and older runs are marked **Scored on rubric vN** with a **Re-scor
 
 ## The dev panel
 
-Beside every scorecard: the exact request body, the raw response, the extracted resume text, latency, input / output / total tokens and the cost. **Copy as curl** and **Copy as TypeScript** reproduce the call; both read your key from `OPENAI_API_KEY` and never include it.
+Beside every scorecard: the exact request body, the raw response, the extracted resume text, parse time, Decisions latency, input / output / total tokens and the cost. **Copy as curl** and **Copy as TypeScript** reproduce the call; both read your key from `OPENAI_API_KEY` and never include it.
 
 ## Measure it: `pnpm eval`
 

@@ -39,7 +39,9 @@ async function RunDetail({ params }: { params: Promise<{ id: string; runId: stri
       </Link>
       <h1 className="mt-4 text-2xl font-semibold tracking-tight">{run.resume.fileName}</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Rubric v{run.rubricVersion} · {run.latencyMs} ms · ${run.costUsd.toFixed(6)}
+        Rubric v{run.rubricVersion}
+        {run.parseMs !== undefined && ` · parsed in ${run.parseMs.toLocaleString()} ms`} · {request.model} {run.latencyMs.toLocaleString()} ms · $
+        {run.costUsd.toFixed(6)}
       </p>
       {stale && (
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-caution-soft px-4 py-3 text-sm text-caution">
@@ -70,6 +72,7 @@ async function RunDetail({ params }: { params: Promise<{ id: string; runId: stri
             requestJson={JSON.stringify(run.request, null, 2)}
             responseJson={run.response ? JSON.stringify(run.response, null, 2) : null}
             latencyMs={run.latencyMs}
+            parseMs={run.parseMs}
             costUsd={run.costUsd}
             usage={runUsage(run)}
             resumeText={resumeText}

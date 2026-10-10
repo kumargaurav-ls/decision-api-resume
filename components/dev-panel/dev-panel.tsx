@@ -6,6 +6,8 @@ export type DevPanelProps = {
   requestJson: string;
   responseJson: string | null;
   latencyMs: number;
+  /** Resume extraction time before the call; absent on older runs. */
+  parseMs?: number;
   costUsd: number;
   usage: { input: number; output: number; total: number } | null;
   resumeText: string | null;
@@ -14,7 +16,7 @@ export type DevPanelProps = {
 };
 
 /** What happened on the wire for one Decisions call. Server component; only tabs and copy are client-side. */
-export function DevPanel({ requestJson, responseJson, latencyMs, costUsd, usage, resumeText, curl, typescript }: DevPanelProps) {
+export function DevPanel({ requestJson, responseJson, latencyMs, parseMs, costUsd, usage, resumeText, curl, typescript }: DevPanelProps) {
   return (
     <section aria-labelledby="dev-panel-heading" className="rounded-2xl border bg-card p-5">
       <h2 id="dev-panel-heading" className="text-sm font-medium text-muted-foreground">
@@ -22,7 +24,8 @@ export function DevPanel({ requestJson, responseJson, latencyMs, costUsd, usage,
       </h2>
 
       <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3">
-        <Stat label="Latency" value={`${latencyMs.toLocaleString()} ms`} />
+        <Stat label="Decisions latency" value={`${latencyMs.toLocaleString()} ms`} />
+        {parseMs !== undefined && <Stat label="Parse time" value={`${parseMs.toLocaleString()} ms`} />}
         <Stat label="Cost" value={`$${costUsd.toFixed(6)}`} />
         <Stat label="Input tokens" value={usage ? usage.input.toLocaleString() : "n/a"} />
         <Stat label="Output tokens" value={usage ? usage.output.toLocaleString() : "n/a"} />
