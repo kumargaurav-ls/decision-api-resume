@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { OpenAIGateway } from "./gateway";
 import { Role, type JdSource } from "./schemas/role";
-import { RubricBody, type Rubric } from "./schemas/rubric";
+import { Rubric as RubricSchema, RubricBody, type Rubric } from "./schemas/rubric";
 import type { Run } from "./schemas/run";
 import { buildDecisionRequest } from "./decisions/build-questions";
 import { costUsd } from "./decisions/cost";
@@ -197,6 +197,27 @@ export function createRoleService({
       const rubric = await requireCurrentRubric(roleId);
       const extracted = await extractOrExplain(file);
       return decideAndSave(roleId, rubric, { fileName: file.fileName, kind: extracted.kind }, extracted.text);
+    },
+
+    /**
+     * Installs a complete, already-versioned rubric as the role's current one (eval fixtures
+     * ship frozen rubrics). Same invariant as generate/save: rubric file first, then the role pointer.
+     */
+    async installRubric(roleId: string, rubric: unknown): Promise<Rubric> {
+      const role = await requireRole(roleId);
+      const parsed = RubricSchema.safeParse(rubric);
+      if (!parsed.success) throw new ServiceError(`The rubric isn't valid: ${describeIssue(parsed.error)}`);
+      await store.saveRubric(role.id, parsed.data);
+      await store.saveRole({ ...role, currentRubricVersion: parsed.data.version });
+      return parsed.data;
+    },
+
+    /** Scores resume text that is already plain text (used by the eval harness). Same path as uploads. */
+    async scoreResumeText(roleId: string, resume: { fileName: string; text: string }): Promise<Run> {
+      const rubric = await requireCurrentRubric(roleId);
+      const text = normaliseText(resume.text);
+      if (!text) throw new ServiceError(`"${resume.fileName}" has no text.`);
+      return decideAndSave(roleId, rubric, { fileName: resume.fileName, kind: "text" }, text);
     },
 
     /** Scores a past run's stored resume text against the current rubric, as a new run. */

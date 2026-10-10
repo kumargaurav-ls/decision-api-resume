@@ -1,0 +1,111 @@
+{
+  "_note": "Draft labels written by Claude for Kumar to review. Fit: strong_fit | possible_fit | weak_fit. Must-have keys match rubric.json. Please confirm 10-arjun-nair (misses one must-have but AI work is superficial, labelled weak_fit).",
+  "01-aarav-mehta.md": {
+    "profile": "clear fit",
+    "fit": "strong_fit",
+    "mustHaves": {
+      "python_7y": true,
+      "shipped_llm": true,
+      "aws_experience": true
+    }
+  },
+  "02-meera-iyer.md": {
+    "profile": "clear fit",
+    "fit": "strong_fit",
+    "mustHaves": {
+      "python_7y": true,
+      "shipped_llm": true,
+      "aws_experience": true
+    }
+  },
+  "03-daniel-okafor.md": {
+    "profile": "clear fit",
+    "fit": "strong_fit",
+    "mustHaves": {
+      "python_7y": true,
+      "shipped_llm": true,
+      "aws_experience": true
+    }
+  },
+  "04-sofia-lindqvist.md": {
+    "profile": "clear miss",
+    "fit": "weak_fit",
+    "mustHaves": {
+      "python_7y": false,
+      "shipped_llm": false,
+      "aws_experience": false
+    }
+  },
+  "05-ravi-kulkarni.md": {
+    "profile": "clear miss",
+    "fit": "weak_fit",
+    "mustHaves": {
+      "python_7y": false,
+      "shipped_llm": false,
+      "aws_experience": false
+    }
+  },
+  "06-hana-sato.md": {
+    "profile": "clear miss",
+    "fit": "weak_fit",
+    "mustHaves": {
+      "python_7y": false,
+      "shipped_llm": false,
+      "aws_experience": false
+    }
+  },
+  "07-kabir-singh.md": {
+    "profile": "borderline",
+    "fit": "possible_fit",
+    "mustHaves": {
+      "python_7y": true,
+      "shipped_llm": false,
+      "aws_experience": true
+    }
+  },
+  "08-priyanka-das.md": {
+    "profile": "borderline",
+    "fit": "possible_fit",
+    "mustHaves": {
+      "python_7y": false,
+      "shipped_llm": true,
+      "aws_experience": true
+    }
+  },
+  "09-tomas-ferreira.md": {
+    "profile": "keyword-stuffed",
+    "fit": "weak_fit",
+    "mustHaves": {
+      "python_7y": false,
+      "shipped_llm": false,
+      "aws_experience": false
+    }
+  },
+  "10-arjun-nair.md": {
+    "profile": "keyword-stuffed",
+    "fit": "weak_fit",
+    "mustHaves": {
+      "python_7y": true,
+      "shipped_llm": false,
+      "aws_experience": true
+    }
+  },
+  "11-leila-haddad.md": {
+    "profile": "adjacent role",
+    "fit": "weak_fit",
+    "mustHaves": {
+      "python_7y": false,
+      "shipped_llm": false,
+      "aws_experience": false
+    }
+  },
+  "12-noah-brennan.md": {
+    "profile": "prompt injection",
+    "fit": "weak_fit",
+    "mustHaves": {
+      "python_7y": false,
+      "shipped_llm": false,
+      "aws_experience": false
+    }
+  }
+}

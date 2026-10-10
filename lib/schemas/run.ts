@@ -7,7 +7,8 @@ export const Run = z.object({
   createdAt: z.string(),
   resume: z.object({
     fileName: z.string(),
-    kind: z.enum(["pdf", "docx"]),
+    /** "text" = plain text scored directly (the eval harness). */
+    kind: z.enum(["pdf", "docx", "text"]),
     chars: z.number().int().nonnegative(),
   }),
   /** Exact body sent to the Decisions API — powers the dev panel. */
