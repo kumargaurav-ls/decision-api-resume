@@ -4,7 +4,15 @@ A local playground for learning OpenAI's **Decisions API** by scoring a resume a
 
 You paste a job description, a model drafts a rubric, you edit it, and then each resume is scored with **one** `POST /v1/decisions` call. The scorecard shows the probabilities the API returns, and a dev panel shows exactly what went over the wire.
 
-> **Use test or synthetic resumes only.** Resume text is sent to OpenAI. The scores are suggestions for a human to review, never a hiring decision.
+> **Use test or synthetic resumes only.** Resume text is sent to OpenAI.
+
+## A human decides
+
+This is a teaching tool, not a screening system. Every scorecard says "Suggestion only. A human decides." on purpose:
+
+- Confidence is not accuracy. Run `pnpm eval` before trusting any number.
+- Rubrics are told never to use protected attributes (age, gender, nationality, college prestige), but check generated rubrics yourself.
+- OpenAI's usage policies restrict automated decisions about employment; keep a person in the loop.
 
 ## Run it in 5 minutes
 
@@ -72,7 +80,7 @@ pnpm eval --private    # uses PRIVATE_EVAL_DIR instead (same layout, kept outsid
 
 The report covers fit accuracy with a confusion matrix, must-have accuracy, Brier scores, a reliability table with expected calibration error (ECE), and the most confident misses. Each fixture includes keyword-stuffed resumes and one prompt-injection attempt. Unanswered questions count as wrong.
 
-A private fixture folder looks like `<role>/jd.md`, `rubric.json`, `labels.json`, `resumes/*.{md,txt,pdf,docx}`. Freeze a rubric from the app with `pnpm tsx scripts/freeze-rubric.ts <fixture-dir> <roleId>`.
+A private fixture folder looks like `<role>/jd.md`, `rubric.json`, `labels.json`, `resumes/*.{md,txt,pdf,docx}`. Freeze a role's current rubric from the app with `pnpm tsx scripts/freeze-rubric.ts <fixture-dir> [roleId]` (without a roleId it freezes the built-in example rubric).
 
 ## Settings (`.env.local`)
 

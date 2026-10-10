@@ -76,7 +76,7 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: var(--signal);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -116,7 +116,7 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --ring: var(--signal);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -135,7 +135,7 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
   body {
     @apply bg-background text-foreground;
@@ -147,16 +147,23 @@
   h1 {
     letter-spacing: -0.02em;
   }
-  /* Visible keyboard focus on every interactive element, not just shadcn controls. */
-  a:focus-visible,
-  button:focus-visible,
-  summary:focus-visible,
-  [tabindex]:focus-visible,
-  input[type="file"]:focus-visible {
-    outline: 2px solid var(--signal);
-    outline-offset: 2px;
-    border-radius: 0.375rem;
-  }
+}
+
+/*
+ * Visible keyboard focus on every interactive element, in the accent colour. Unlayered on
+ * purpose so it also wins over component utilities like outline-none (WCAG 2.4.7, 1.4.11).
+ */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[role="tab"]:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+  outline-style: solid;
+  outline-width: 2px;
+  outline-color: var(--signal);
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {

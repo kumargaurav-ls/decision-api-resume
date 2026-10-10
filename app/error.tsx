@@ -1,9 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 /** Unexpected errors on any page: say what happened and offer a retry, without a stack trace. */
-export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function ErrorPage({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
+
   return (
     <main className="mx-auto w-full max-w-xl px-4 py-24">
       <h1 className="text-2xl font-semibold tracking-tight">Something went wrong</h1>
@@ -14,7 +19,8 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
         {error.message || "Unknown error"}
         {error.digest ? ` (ref ${error.digest})` : ""}
       </p>
-      <Button className="mt-6" onClick={reset}>
+      {/* retry() refetches the server data and re-renders; reset() would only re-render. */}
+      <Button className="mt-6" onClick={() => retry()}>
         Try again
       </Button>
     </main>

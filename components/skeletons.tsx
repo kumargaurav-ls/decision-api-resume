@@ -1,11 +1,13 @@
+import { cn } from "@/lib/utils";
+
 /** Placeholder blocks shaped like the content they stand in for. Pulse only when motion is allowed. */
 function Block({ className }: { className: string }) {
-  return <div className={`rounded-xl bg-muted motion-safe:animate-pulse ${className}`} />;
+  return <div className={cn("rounded-xl bg-muted motion-safe:animate-pulse", className)} />;
 }
 
 function Loading({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div role="status" aria-label={label}>
+    <div role="status">
       <span className="sr-only">{label}</span>
       {children}
     </div>
