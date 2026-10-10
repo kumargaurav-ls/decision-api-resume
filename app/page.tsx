@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { RolesListSkeleton } from "@/components/skeletons";
 import { buttonVariants } from "@/components/ui/button";
 import { getApp } from "@/lib/app";
 
@@ -12,7 +13,7 @@ export default function RolesPage() {
           New role
         </Link>
       </header>
-      <Suspense fallback={<p className="mt-10 text-sm text-muted-foreground">Loading roles…</p>}>
+      <Suspense fallback={<RolesListSkeleton />}>
         <RolesList />
       </Suspense>
     </main>

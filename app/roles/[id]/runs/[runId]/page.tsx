@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { DevPanel } from "@/components/dev-panel/dev-panel";
 import { Scorecard } from "@/components/scorecard/scorecard";
 import { RescoreButton } from "@/components/rescore-button";
+import { RunSkeleton } from "@/components/skeletons";
 import { StaleBadge } from "@/components/stale-badge";
 import { getApp } from "@/lib/app";
 import { runRequest, runUsage } from "@/lib/decisions/scorecard";
@@ -12,7 +13,7 @@ import { toCurl, toTypeScript } from "@/lib/decisions/snippets";
 export default function RunPage({ params }: PageProps<"/roles/[id]/runs/[runId]">) {
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-12">
-      <Suspense fallback={<p className="text-sm text-muted-foreground">Loading run…</p>}>
+      <Suspense fallback={<RunSkeleton />}>
         <RunDetail params={params} />
       </Suspense>
     </main>

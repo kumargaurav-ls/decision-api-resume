@@ -2,12 +2,13 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { RubricEditor } from "@/components/rubric-editor";
+import { RubricEditorSkeleton } from "@/components/skeletons";
 import { getApp } from "@/lib/app";
 
 export default function RubricEditorPage({ params }: PageProps<"/roles/[id]/rubric">) {
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-12">
-      <Suspense fallback={<p className="text-sm text-muted-foreground">Loading rubric…</p>}>
+      <Suspense fallback={<RubricEditorSkeleton />}>
         <Editor params={params} />
       </Suspense>
     </main>

@@ -5,6 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { GenerateRubricButton } from "@/components/generate-rubric-button";
 import { ResumeUpload } from "@/components/resume-upload";
 import { RunHistory } from "@/components/run-history";
+import { RoleSkeleton } from "@/components/skeletons";
 import { RubricView } from "@/components/rubric-view";
 import { getApp } from "@/lib/app";
 import { jdSourceLabel } from "@/lib/schemas/role";
@@ -15,7 +16,7 @@ export default function RolePage({ params }: PageProps<"/roles/[id]">) {
       <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
         ‹ Roles
       </Link>
-      <Suspense fallback={<p className="mt-6 text-sm text-muted-foreground">Loading role…</p>}>
+      <Suspense fallback={<RoleSkeleton />}>
         <RoleDetail params={params} />
       </Suspense>
     </main>
