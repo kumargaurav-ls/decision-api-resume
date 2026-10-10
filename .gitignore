@@ -45,3 +45,7 @@ next-env.d.ts
 eval-report.md
 eval-results.json
 !.env.example
+
+# test artifacts
+/*.png
+/copied-curl.sh
