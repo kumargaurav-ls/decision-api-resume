@@ -4,10 +4,11 @@ import { cache } from "react";
 import { loadConfig, type Config, type ConfigResult } from "./config";
 import { createMockGateway } from "./gateway-mock";
 import { createOpenAIGateway } from "./gateway-openai";
+import { createLabService, type LabService } from "./lab";
 import { createRoleService, type RoleService } from "./role-service";
 import { createStore } from "./store";
 
-export type App = { config: Config; service: RoleService };
+export type App = { config: Config; service: RoleService; lab: LabService };
 export type ConfigProblems = Extract<ConfigResult, { ok: false }>;
 
 /** Loads env and builds services once per request. */
@@ -20,7 +21,8 @@ export const loadApp = cache(async (): Promise<{ app: App } | { problems: Config
     ? createMockGateway()
     : createOpenAIGateway({ apiKey: config.openaiApiKey!, rubricModel: config.rubricModel });
   const service = createRoleService({ store: createStore(config.dataDir), gateway, decisionModel: config.decisionModel });
-  return { app: { config, service } };
+  const lab = createLabService({ gateway, decisionModel: config.decisionModel, lowConfidenceThreshold: config.lowConfidenceThreshold });
+  return { app: { config, service, lab } };
 });
 
 /** The configured app, or null when env is incomplete (the layout shows the setup panel). */

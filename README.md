@@ -44,6 +44,8 @@ The Decisions API does not write text. You send some input plus a list of **type
 
 Any single question can come back as a `refusal`; the others still get answers.
 
+To see this visually, open **How Luna decides** from the home page (`/how-luna-decides`). It walks through the three steps, then lets you switch lines of a small sample resume on and off. Each change is one live Luna call (about $0.00007), and you watch a predicate, a score and a choice move.
+
 ## How a rubric becomes questions
 
 | Rubric part | Question | Name sent to the API |

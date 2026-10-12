@@ -9,9 +9,14 @@ export default function RolesPage() {
     <main className="mx-auto w-full max-w-3xl px-4 py-12">
       <header className="flex items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">Decision Playground</h1>
-        <Link href="/roles/new" className={buttonVariants()}>
-          New role
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/how-luna-decides" className={buttonVariants({ variant: "ghost" })}>
+            How Luna decides
+          </Link>
+          <Link href="/roles/new" className={buttonVariants()}>
+            New role
+          </Link>
+        </div>
       </header>
       <Suspense fallback={<RolesListSkeleton />}>
         <RolesList />
